@@ -124,7 +124,7 @@ streamlit run streamlit_app.py
 
 (or `streamlit run src/zomato_rec/web_ui/app.py` — same app.)
 
-Use repo root as the working directory. Ensure Phase 1 has produced `data/processed/restaurants.parquet` (or upload that file in the app, or set `ZOMATO_PROCESSED_DATASET` to an absolute path). Set `GROQ_API_KEY` in `.env` or copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` and fill values.
+Use repo root as the working directory. Ensure Phase 1 has produced `data/processed/restaurants.parquet`, or set `ZOMATO_PROCESSED_DATASET` to an absolute path. Set `GROQ_API_KEY` in `.env` or copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` and fill values.
 
 **Streamlit Community Cloud (free tier)**
 
@@ -132,6 +132,6 @@ Use repo root as the working directory. Ensure Phase 1 has produced `data/proces
 2. Create a new app → **Main file path:** `streamlit_app.py` (repo root). You can also use `src/zomato_rec/web_ui/app.py` if you prefer.
 3. Python packages: use the repo-root **`requirements.txt`** (Streamlit’s default).
 4. **Secrets** (app settings): at minimum `GROQ_API_KEY`. Optional: `GROQ_MODEL`, `ZOMATO_PROCESSED_DATASET` (absolute path if you mount or fetch data elsewhere).
-5. **Dataset:** `data/` is gitignored by default. Either attach storage your way, set `ZOMATO_PROCESSED_DATASET` in secrets to a reachable Parquet path, or use the in-app **Upload `restaurants.parquet`** control after each deploy (file is written under `.streamlit/` on the host).
+5. **Dataset:** `data/` is gitignored by default. Commit or mount `data/processed/restaurants.parquet` if your host allows it, or set **`ZOMATO_PROCESSED_DATASET`** in secrets to a reachable Parquet path (for example on attached storage).
 
 Cold starts on the free tier are normal; first model request may take tens of seconds.

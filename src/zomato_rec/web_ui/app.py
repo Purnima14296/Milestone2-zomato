@@ -41,16 +41,6 @@ def _parse_cuisines(raw: str) -> list[str]:
     return [p for p in parts if p]
 
 
-def _maybe_handle_parquet_upload(uploaded) -> None:
-    if uploaded is None:
-        return
-    dest_dir = _REPO_ROOT / ".streamlit"
-    dest_dir.mkdir(parents=True, exist_ok=True)
-    dest = dest_dir / "uploaded_restaurants.parquet"
-    dest.write_bytes(uploaded.getvalue())
-    os.environ["ZOMATO_PROCESSED_DATASET"] = str(dest)
-
-
 def main() -> None:
     _inject_streamlit_secrets()
 
@@ -76,7 +66,10 @@ def main() -> None:
             st.success("Dataset OK")
             st.code(str(ds_path), language="text")
         else:
-            st.warning("No processed Parquet at the default path. Upload a file below or set `ZOMATO_PROCESSED_DATASET`.")
+            st.warning(
+                "No processed Parquet at the default path. Run Phase 1 locally (`data/processed/restaurants.parquet`) "
+                "or set the **`ZOMATO_PROCESSED_DATASET`** secret to an absolute path on the host."
+            )
 
         if settings.groq_api_key:
             st.success("Groq API key is set (`GROQ_API_KEY`).")
@@ -85,11 +78,8 @@ def main() -> None:
 
         st.markdown(
             "**Streamlit Community Cloud:** set secrets to match `.streamlit/secrets.toml.example`, "
-            "point the main file to `src/zomato_rec/web_ui/app.py`, and use `requirements.txt` at repo root."
+            "main file **`streamlit_app.py`**, and use **`requirements.txt`** at repo root."
         )
-
-    up = st.file_uploader("Upload processed `restaurants.parquet` (optional)", type=["parquet"])
-    _maybe_handle_parquet_upload(up)
 
     cities: list[str] = []
     if _dataset_ok():
@@ -149,7 +139,10 @@ def main() -> None:
         return
 
     if not _dataset_ok():
-        st.error("Processed dataset not found. Run Phase 1, set `ZOMATO_PROCESSED_DATASET`, or upload `restaurants.parquet`.")
+        st.error(
+            "Processed dataset not found. Run Phase 1 for `data/processed/restaurants.parquet`, "
+            "or set **`ZOMATO_PROCESSED_DATASET`** in `.env` / Streamlit secrets to a Parquet file path."
+        )
         return
 
     cuisines = _parse_cuisines(cuisines_raw)

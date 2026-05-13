@@ -15,9 +15,6 @@ data/
 storage/
 logs/
 
-# Streamlit local uploads (Phase 9)
-.streamlit/uploaded_restaurants.parquet
-
 # Old phase folders (moved to Docs)
 phase5/
 phase6/
