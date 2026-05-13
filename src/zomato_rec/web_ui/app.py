@@ -27,9 +27,13 @@ def _inject_streamlit_secrets() -> None:
         sec = st.secrets
     except FileNotFoundError:
         return
-    for key in ("GROQ_API_KEY", "GROQ_MODEL", "ZOMATO_PROCESSED_DATASET"):
+    for key in ("GROQ_API_KEY", "GROQ_MODEL", "ZOMATO_PROCESSED_DATASET", "HF_DATASET_ID", "HF_DATASET_SPLIT"):
         if key in sec and str(sec[key]).strip():
             os.environ[key] = str(sec[key]).strip()
+    if "HF_TOKEN" in sec and str(sec["HF_TOKEN"]).strip():
+        t = str(sec["HF_TOKEN"]).strip()
+        os.environ["HF_TOKEN"] = t
+        os.environ.setdefault("HUGGING_FACE_HUB_TOKEN", t)
 
 
 def _dataset_ok() -> bool:
@@ -39,6 +43,30 @@ def _dataset_ok() -> bool:
 def _parse_cuisines(raw: str) -> list[str]:
     parts = [p.strip() for p in raw.replace("\n", ",").split(",")]
     return [p for p in parts if p]
+
+
+def _default_parquet_paths() -> tuple[Path, Path]:
+    out = _REPO_ROOT / "data" / "processed" / "restaurants.parquet"
+    rep = _REPO_ROOT / "data" / "processed" / "ingest_report.json"
+    return out, rep
+
+
+def _run_phase1_bootstrap() -> None:
+    """Build `data/processed/restaurants.parquet` from Hugging Face (same as `python -m zomato_rec.phase1.ingest`)."""
+    from zomato_rec.config import Settings
+    from zomato_rec.logging_config import configure_logging
+    from zomato_rec.phase1.ingest import run as phase1_run
+
+    s = Settings()
+    configure_logging("WARNING")
+    out, rep = _default_parquet_paths()
+    phase1_run(
+        dataset_id=s.hf_dataset_id,
+        split=s.hf_dataset_split,
+        out_path=str(out),
+        out_format="parquet",
+        report_path=str(rep),
+    )
 
 
 def main() -> None:
@@ -51,8 +79,8 @@ def main() -> None:
     )
     st.title("Restaurant recommendations")
     st.caption(
-        "Phase 9 — Streamlit deployment UI. Runs the same in-process pipeline as the Phase 7 API "
-        "(preferences → shortlist → Groq → ranked results)."
+        "Phase 9 — **All-in-one Python app**: preferences → shortlist → Groq → results (same engine as the **FastAPI** backend). "
+        "The **Next.js** UI is not started here; deploy or run `frontend` + `backend` separately if you need that client."
     )
 
     from zomato_rec.config import Settings
@@ -67,8 +95,8 @@ def main() -> None:
             st.code(str(ds_path), language="text")
         else:
             st.warning(
-                "No processed Parquet at the default path. Run Phase 1 locally (`data/processed/restaurants.parquet`) "
-                "or set the **`ZOMATO_PROCESSED_DATASET`** secret to an absolute path on the host."
+                "No Parquet yet. Use **Prepare dataset from Hugging Face** in the main panel (first run may take a few minutes), "
+                "or set **`ZOMATO_PROCESSED_DATASET`** to a file path."
             )
 
         if settings.groq_api_key:
@@ -80,6 +108,26 @@ def main() -> None:
             "**Streamlit Community Cloud:** set secrets to match `.streamlit/secrets.toml.example`, "
             "main file **`streamlit_app.py`**, and use **`requirements.txt`** at repo root."
         )
+
+    if not _dataset_ok():
+        st.error(
+            "**No processed restaurant file yet.** Streamlit Cloud clones your repo without the `data/` folder "
+            "(it is gitignored), so recommendations cannot run until a Parquet exists on this machine."
+        )
+        st.markdown(
+            "Use the button below to run **Phase 1 ingest** once: it downloads the Hugging Face dataset and writes "
+            "`data/processed/restaurants.parquet`. Typical time **1–4 minutes**; keep the tab open."
+        )
+        if st.button("Prepare dataset from Hugging Face", type="primary"):
+            try:
+                with st.spinner("Downloading and preprocessing… (Phase 1)"):
+                    _run_phase1_bootstrap()
+                st.success("Dataset built. Refreshing the app…")
+                st.rerun()
+            except Exception as e:
+                st.error("Could not build the dataset. Check logs below. For private HF datasets, add **HF_TOKEN** to secrets.")
+                st.exception(e)
+        st.divider()
 
     cities: list[str] = []
     if _dataset_ok():
@@ -140,8 +188,8 @@ def main() -> None:
 
     if not _dataset_ok():
         st.error(
-            "Processed dataset not found. Run Phase 1 for `data/processed/restaurants.parquet`, "
-            "or set **`ZOMATO_PROCESSED_DATASET`** in `.env` / Streamlit secrets to a Parquet file path."
+            "Dataset still missing. Use **Prepare dataset from Hugging Face** above, "
+            "or set **`ZOMATO_PROCESSED_DATASET`** in `.env` / Streamlit secrets."
         )
         return
 

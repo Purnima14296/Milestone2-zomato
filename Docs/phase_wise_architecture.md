@@ -159,7 +159,7 @@ Ships the **interactive Python UI** as a managed Streamlit app so users can run 
 - **Secrets & config** (Cloud “Secrets” or equivalent):
   - `GROQ_API_KEY` and any other keys required by `Settings` / the LLM gateway (Phase 4)
   - optional: dataset path overrides if the hosted runtime does not mirror local `data/processed/`
-- **Artifacts**: ensure the **processed dataset** (Phase 1 output, e.g. Parquet under `data/processed/`) is available in the deployment context—committed for small demos, or fetched at startup from private/object storage for larger assets.
+- **Artifacts**: ensure the **processed dataset** (Phase 1 output, e.g. Parquet under `data/processed/`) exists on the host—use the Streamlit app’s **Prepare dataset from Hugging Face** control on first deploy, commit for small demos, or fetch from private/object storage for larger assets.
 - **Scope**: Streamlit talks **in-process** to the same Python modules as Phases 2–5 (preferences → retrieval → LLM → render); it is an alternative surface to Phase 7/8, not a replacement for the REST API when you need mobile clients or strict JSON contracts.
 - **Operations**: pin dependency versions (`pyproject.toml` / lockfile), document cold starts, and keep logs/metrics aligned with Phase 6 where possible.
 
