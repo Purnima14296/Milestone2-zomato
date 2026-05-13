@@ -154,8 +154,8 @@ A **dedicated web client** that talks only to Phase 7 over HTTPS (or local dev p
 
 Ships the **interactive Python UI** as a managed Streamlit app so users can run preferences and view recommendations without installing the repo locally.
 
-- **App entry**: `streamlit run src/zomato_rec/web_ui/app.py` (see `README.md` for local parity).
-- **Platform (free tier)**: **Streamlit Community Cloud** — connect a GitHub repo, set the main file path to `src/zomato_rec/web_ui/app.py`, use repo-root `requirements.txt`, and deploy from the default branch.
+- **App entry**: `streamlit_app.py` (repo root, for Streamlit Cloud) or `streamlit run src/zomato_rec/web_ui/app.py` (see `README.md` for local parity).
+- **Platform (free tier)**: **Streamlit Community Cloud** — connect a GitHub repo, set the main file path to **`streamlit_app.py`** (or `src/zomato_rec/web_ui/app.py`), use repo-root `requirements.txt`, and deploy from the default branch.
 - **Secrets & config** (Cloud “Secrets” or equivalent):
   - `GROQ_API_KEY` and any other keys required by `Settings` / the LLM gateway (Phase 4)
   - optional: dataset path overrides if the hosted runtime does not mirror local `data/processed/`
