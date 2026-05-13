@@ -150,23 +150,6 @@ A **dedicated web client** that talks only to Phase 7 over HTTPS (or local dev p
 
 ---
 
-### Phase 9 — Deployment: Streamlit (Hosted Python UI)
-
-Ships the **interactive Python UI** as a managed Streamlit app so users can run preferences and view recommendations without installing the repo locally.
-
-- **App entry**: `streamlit run src/zomato_rec/web_ui/app.py` (see `README.md` for local parity).
-- **Platform (free tier)**: **Streamlit Community Cloud** — connect a GitHub repo, set the main file path to `src/zomato_rec/web_ui/app.py`, use repo-root `requirements.txt`, and deploy from the default branch.
-- **Secrets & config** (Cloud “Secrets” or equivalent):
-  - `GROQ_API_KEY` and any other keys required by `Settings` / the LLM gateway (Phase 4)
-  - optional: dataset path overrides if the hosted runtime does not mirror local `data/processed/`
-- **Artifacts**: ensure the **processed dataset** (Phase 1 output, e.g. Parquet under `data/processed/`) is available in the deployment context—committed for small demos, or fetched at startup from private/object storage for larger assets.
-- **Scope**: Streamlit talks **in-process** to the same Python modules as Phases 2–5 (preferences → retrieval → LLM → render); it is an alternative surface to Phase 7/8, not a replacement for the REST API when you need mobile clients or strict JSON contracts.
-- **Operations**: pin dependency versions (`pyproject.toml` / lockfile), document cold starts, and keep logs/metrics aligned with Phase 6 where possible.
-
-**Deliverable**: a public or team-only Streamlit URL that runs the recommendation journey end-to-end with secrets outside the repo.
-
----
-
 ## End-to-End Flow (High-level)
 
 ### Core pipeline (Phases 1–6, shared by CLI and API)
@@ -179,14 +162,6 @@ User Preferences → Validation → Candidate Retrieval (Dataset) → Prompt Bui
 Browser (Phase 8)  --HTTPS-->  Backend API (Phase 7)  -->  Phases 2 → 3 → 4  -->  JSON response  -->  UI render
                                       |
                                       +--> Phase 1 dataset (read)  +  optional Phase 6 telemetry
-```
-
-### Streamlit path (Phase 9)
-
-```text
-Browser  --HTTPS-->  Streamlit Cloud (Phase 9)  -->  in-process: Phases 2 → 3 → 4 → 5-style render
-                              |
-                              +--> Phase 1 dataset (read)  +  secrets (e.g. Groq)
 ```
 
 ### Offline / CLI path (unchanged)

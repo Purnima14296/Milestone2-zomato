@@ -2,7 +2,14 @@
 
 ## 📁 Repository Structure
 
-All phases of the restaurant recommendation system are organized under the `Docs/` folder for better documentation and maintainability. **No duplicate files exist - each file has a single source of truth.**
+Phases are documented under `Docs/`. Core pipeline code lives under `src/zomato_rec/`. **Phase 7** (`backend/`) and **Phase 8** (`frontend/`) are runnable apps at the repository root.
+
+### Initial setup (Python + API extras)
+
+```bash
+pip install -e .
+pip install -e ".[api]"
+```
 
 ### 🗂️ Phase Organization
 
@@ -18,8 +25,8 @@ Docs/
 ├── phase4/                     # LLM Integration & Recommendation Generation (from src/zomato_rec/phase4)
 ├── phase5/                     # Presentation Layer & UX Enhancements (structure ready)
 ├── phase6/                     # Evaluation, Monitoring & Quality Loop (structure ready)
-├── phase7/                     # Backend API Layer (FastAPI)
-└── phase8/                     # Frontend Application (Next.js - in root during development)
+├── phase7/                     # Backend API (FastAPI) — REST service over the pipeline
+└── phase8/                     # Frontend (Next.js) — web client for Phase 7
 ```
 
 ## 📋 Phase Descriptions
@@ -55,94 +62,44 @@ Docs/
 - **Files**: `golden_tests.py`, `metrics.py`, `monitoring.py`, `dashboard.py`, `quality_improvement.py`, `README.md`
 
 ### Phase 7: Backend API Layer
-- **Location**: `Docs/phase7/`
-- **Purpose**: FastAPI backend with RESTful endpoints
-- **Files**: 
-  - `app.py`, `app-simple.py`, `app-complete.py`, `app-final.py`
-  - `health_api.py`, `recommendation_api.py`, `metadata_api.py`
-  - `models.py`, `requirements.txt`, `README.md`
-  - `simple-api.py`, `test-recommendations.py`
+- **Location**: `Docs/phase7/` (overview); **implementation**: `backend/` (FastAPI) — see `backend/README.md`
+- **Purpose**: Production REST API wrapping preference validation, shortlisting (Phase 3), and LLM recommendations (Phase 4); health, metadata, CORS, rate limits, request IDs
+- **Contract**: OpenAPI at `/docs`; JSON only; no secrets in responses
 
 ### Phase 8: Frontend Application
-- **Location**: `Docs/phase8/`
-- **Purpose**: Next.js frontend application
-- **Files**:
-  - `package.json`, `next.config.js`, `tailwind.config.js`, `tsconfig.json`
-  - `src/app/` - Next.js app structure
-  - `src/lib/` - API clients and utilities
-  - `src/types/` - TypeScript type definitions
-  - `index.html`, `index-fixed.html` - Standalone HTML versions
-  - `README.md`
+- **Location**: `Docs/phase8/` (overview); **implementation**: `frontend/` (Next.js) — see `frontend/README.md`
+- **Purpose**: Browser UI for capturing preferences, calling Phase 7, and rendering ranked results with loading and error states
+- **Stack**: Next.js App Router, TanStack Query, `NEXT_PUBLIC_API_URL` for the API base URL
 
-## 🚀 Running the System
+## 🚀 Running the full stack (Phases 7–8)
 
-### Backend Server (Phase 7)
+Prerequisites: processed dataset (`data/processed/restaurants.parquet` from Phase 1), `GROQ_API_KEY` in the **repository root** `.env`, Python venv with `pip install -e ".[api]"`.
+
+**Backend (Phase 7)** — run from the **repository root**:
+
 ```bash
-cd Docs/phase7
-python simple-api.py
+python -m uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
 ```
-**Server**: http://localhost:8002
 
-### Frontend Application (Phase 8)
+- OpenAPI docs: http://127.0.0.1:8000/docs  
+- Health: `GET /api/health`  
+- Recommendations: `POST /api/recommendations`  
+- Optional browse (no LLM): `GET /api/restaurants?location=...`  
+
+Optional environment variable: `API_CORS_ORIGINS` (comma-separated), default `http://localhost:3000`.
+
+**Frontend (Phase 8)**:
+
 ```bash
-cd Docs/phase8
-# Option 1: Next.js development server
+cd frontend
+copy .env.local.example .env.local
+npm install
 npm run dev
-
-# Option 2: Simple HTML server
-python -m http.server 8080
-```
-**Frontend**: http://localhost:8080/index-fixed.html
-
-## 🎯 Live Example
-
-**Test Parameters:**
-- Location: Bellandur
-- Budget: ₹2000
-- Rating: 4.0+
-- Top K: 5 restaurants
-
-**Expected Output:**
-1. Brahmin's Coffee Bar (⭐ 4.5, 💰 ₹400)
-2. Barbeque Nation (⭐ 4.4, 💰 ₹1400)
-3. Paradise (⭐ 4.3, 💰 ₹1100)
-4. Meghana Foods (⭐ 4.2, 💰 ₹800)
-5. Mainland China (⭐ 4.1, 💰 ₹1200)
-
-## 📊 API Endpoints
-
-### Health Check
-```
-GET http://localhost:8002/api/health
 ```
 
-### Generate Recommendations
-```
-POST http://localhost:8002/api/recommendations
-Content-Type: application/json
+App: http://localhost:3000 — set `NEXT_PUBLIC_API_URL` in `frontend/.env.local` if the API base URL differs from `http://127.0.0.1:8000`.
 
-{
-  "preferences": {
-    "location": "Bellandur",
-    "budget": {"min": 0, "max": 2000},
-    "minimum_rating": 4.0,
-    "cuisines": []
-  },
-  "top_k": 5,
-  "include_explanations": true
-}
-```
-
-### System Metadata
-```
-GET http://localhost:8002/api/metadata
-```
-
-## 🔄 Integration Flow
-
-```
-User Input (Frontend) → API Request → Backend Processing → LLM Integration → Response Generation → Frontend Display
-```
+Implementation READMEs: `backend/README.md`, `frontend/README.md`.
 
 ## 📝 File Alignment
 
@@ -155,11 +112,9 @@ All files are properly aligned and readable:
 
 ## 🛠️ Development Notes
 
-- All phase folders are now under `Docs/` for better organization
-- Original functionality remains unchanged
-- File references and imports have been preserved
-- System output and behavior are identical to previous version
-- Git history is maintained with proper commit messages
+- **Phases 1–6**: documented under `Docs/phase1`–`Docs/phase6` and implemented under `src/zomato_rec/phase1`–`phase6` (plus `web_ui` for optional Streamlit-style input during development)
+- **Phases 7–8**: architecture in `Docs/phase_wise_architecture.md`; phase entry points in `Docs/phase7/README.md` and `Docs/phase8/README.md`. Runnable code typically lives in sibling apps such as **`backend/`** (FastAPI) and **`frontend/`** (Next.js)
+- Keep **secrets** (Groq, DB) on the server (Phase 7) only; the browser client must never embed API keys
 
 ## 📚 Additional Documentation
 

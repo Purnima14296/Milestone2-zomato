@@ -15,19 +15,8 @@ data/
 storage/
 logs/
 
-# Frontend
-Docs/phase8/node_modules/
-Docs/phase8/.next/
-Docs/phase8/out/
-Docs/phase8/build/
-Docs/phase8/dist/
-Docs/phase8/.env.local
-Docs/phase8/.env.development.local
-Docs/phase8/.env.test.local
-Docs/phase8/.env.production.local
-Docs/phase8/npm-debug.log*
-Docs/phase8/yarn-debug.log*
-Docs/phase8/yarn-error.log*
+# Streamlit local uploads (Phase 9)
+.streamlit/uploaded_restaurants.parquet
 
 # Old phase folders (moved to Docs)
 phase5/
@@ -46,7 +35,16 @@ Docs/phase*/__pycache__/
 .DS_Store
 Thumbs.db
 
-# Test files
-test_*.json
-test_*.py
+# Frontend / node_modules
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+
+# Backend
+backend/**/__pycache__/
 

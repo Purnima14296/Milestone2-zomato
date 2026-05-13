@@ -1,0 +1,10 @@
+# Streamlit Community Cloud + local `pip install -r requirements.txt`
+# (mirrors core runtime deps from pyproject.toml; FastAPI/uvicorn not required for the Streamlit path.)
+streamlit>=1.35
+pydantic>=2.7
+pydantic-settings>=2.2
+python-dotenv>=1.0
+datasets>=2.19
+pandas>=2.2
+pyarrow>=15
+groq>=1.2.0

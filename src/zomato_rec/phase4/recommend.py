@@ -88,6 +88,9 @@ def run_phase4(
 
     prefs = load_preferences(preferences_path)
     candidates = load_shortlist(shortlist_path)
+    if not candidates:
+        raise SystemExit("The Phase 3 shortlist is empty! Phase 4 requires at least one candidate to recommend.")
+
     allowed_names = {c["restaurant_name"] for c in candidates if isinstance(c.get("restaurant_name"), str)}
 
     system = build_system_prompt()

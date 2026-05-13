@@ -1,0 +1,10 @@
+{
+  "location": "Bellandur",
+  "budget": {
+    "min": 0,
+    "max": 2000
+  },
+  "minimum_rating": 4.0,
+  "cuisines": [],
+  "additional_preferences": null
+}
